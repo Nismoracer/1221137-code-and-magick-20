@@ -11,21 +11,126 @@ var COAT_COLORS = ['rgb(101, 137, 164)', 'rgb(241, 43, 107)', 'rgb(146, 100, 161
 
 var EYES_COLORS = ['black', 'red', 'blue', 'yellow', 'green'];
 
+var FIREBALL_COLORS = ['#ee4830', '#30a8ee', '#5ce6c0', '#e848d5', '#e6e848'];
+
 var WIZARDS_AMOUNT = 4;
 
-var userDialog = document.querySelector('.setup');
-userDialog.classList.remove('hidden');
+var MIN_NAME_LENGTH = 2;
+var MAX_NAME_LENGTH = 25;
 
-var similarListElement = userDialog.querySelector('.setup-similar-list');
+var setup = document.querySelector('.setup');
+var setupOpen = document.querySelector('.setup-open');
+var setupClose = setup.querySelector('.setup-close');
+var userNameInput = setup.querySelector('.setup-user-name');
+var coatInput = setup.querySelector('form.setup-wizard-form input[name=coat-color]');
+var eyesInput = setup.querySelector('form.setup-wizard-form input[name=eyes-color]');
+var fireballInput = setup.querySelector('form.setup-wizard-form input[name=fireball-color]');
+var wizardCoat = setup.querySelector('.wizard-coat');
+var wizardEyes = setup.querySelector('.wizard-eyes');
+var wizardFireball = setup.querySelector('.setup-fireball-wrap');
 
-var similarWizardTemplate = document.querySelector('#similar-wizard-template')
-  .content
-  .querySelector('.setup-similar-item');
 
 var randomizeSelect = function (strings) {
   var randomNumber = Math.floor((Math.random() * strings.length));
   return strings[randomNumber];
 };
+
+var onPopupEscPress = function (evt) {
+  if (evt.key === 'Escape') {
+    evt.preventDefault();
+    if (userNameInput !== document.activeElement) {
+      closePopup();
+    }
+  }
+};
+
+var changeColor = function (currentElement, currentArray) {
+  var resultColor;
+  resultColor = randomizeSelect(currentArray);
+  if (currentElement.className.baseVal === 'wizard-coat') {
+    coatInput.value = resultColor;
+    currentElement.style.fill = resultColor;
+  } else if (currentElement.className.baseVal === 'wizard-eyes') {
+    eyesInput.value = resultColor;
+    currentElement.style.fill = resultColor;
+  } else {
+    fireballInput.value = resultColor;
+    currentElement.style.background = resultColor;
+  }
+};
+
+var openPopup = function () {
+  setup.classList.remove('hidden');
+  document.addEventListener('keydown', onPopupEscPress);
+};
+
+var closePopup = function () {
+  setup.classList.add('hidden');
+  document.removeEventListener('keydown', onPopupEscPress);
+};
+
+setupOpen.addEventListener('click', function () {
+  openPopup();
+});
+
+setupOpen.addEventListener('keydown', function (evt) {
+  if (evt.key === 'Enter') {
+    openPopup();
+  }
+});
+
+wizardCoat.addEventListener('click', function () {
+  changeColor(wizardCoat, COAT_COLORS);
+});
+
+wizardEyes.addEventListener('click', function () {
+  changeColor(wizardEyes, EYES_COLORS);
+});
+
+wizardFireball.addEventListener('click', function () {
+  changeColor(wizardFireball, FIREBALL_COLORS);
+});
+
+
+setupClose.addEventListener('click', function () {
+  closePopup();
+});
+
+setupClose.addEventListener('keydown', function (evt) {
+  if (evt.key === 'Enter') {
+    closePopup();
+  }
+});
+
+userNameInput.addEventListener('invalid', function () {
+  if (userNameInput.validity.tooShort) {
+    userNameInput.setCustomValidity('Имя должно состоять минимум из 2-х символов');
+  } else if (userNameInput.validity.tooLong) {
+    userNameInput.setCustomValidity('Имя не должно превышать 25-ти символов');
+  } else if (userNameInput.validity.valueMissing) {
+    userNameInput.setCustomValidity('Обязательное поле');
+  } else {
+    userNameInput.setCustomValidity('');
+  }
+});
+
+userNameInput.addEventListener('input', function () {
+  var valueLength = userNameInput.value.length;
+
+  if (valueLength < MIN_NAME_LENGTH) {
+    userNameInput.setCustomValidity('Ещё ' + (MIN_NAME_LENGTH - valueLength) + ' симв.');
+  } else if (valueLength > MAX_NAME_LENGTH) {
+    userNameInput.setCustomValidity('Удалите лишние ' + (valueLength - MAX_NAME_LENGTH) + ' симв.');
+  } else {
+    userNameInput.setCustomValidity('');
+  }
+});
+
+var similarListElement = setup.querySelector('.setup-similar-list');
+
+var similarWizardTemplate = document.querySelector('#similar-wizard-template')
+  .content
+  .querySelector('.setup-similar-item');
 
 var wizards = [];
 
@@ -61,4 +166,4 @@ for (i = 0; i < wizards.length; i++) {
 }
 similarListElement.appendChild(fragment);
 
-userDialog.querySelector('.setup-similar').classList.remove('hidden');
+setup.querySelector('.setup-similar').classList.remove('hidden');
